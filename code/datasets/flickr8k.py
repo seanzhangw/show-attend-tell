@@ -1,4 +1,5 @@
 import os
+import random
 from PIL import Image
 import torch
 from torch.utils.data import Dataset
@@ -77,6 +78,56 @@ def collate_fn(batch):
     captions = torch.stack(captions, dim=0)
 
     return images, captions
+
+
+def split_train_val_images(captions_map, val_ratio=0.1, seed=42):
+    """
+    Split image ids into train / val (no image appears in both).
+    """
+    ids = list(captions_map.keys())
+    rng = random.Random(seed)
+    rng.shuffle(ids)
+    n_val = max(1, int(len(ids) * val_ratio))
+    val_ids = set(ids[:n_val])
+    train_ids = set(ids[n_val:])
+    return train_ids, val_ids
+
+
+def build_flickr8k_dataset_split(
+    config, transform=None, val_ratio=0.1, seed=42
+):
+    """
+    Image-level train/val split. Vocabulary is built from **training** captions only.
+
+    Returns:
+        train_dataset, val_dataset, val_image_ids (set), full_captions_map, word2idx, idx2word
+    """
+    if transform is None:
+        transform = _default_image_transform()
+
+    full_map = load_captions(config.CAPTION_FILE)
+    train_ids, val_ids = split_train_val_images(full_map, val_ratio, seed)
+
+    train_map = {k: full_map[k] for k in train_ids}
+    word2idx, idx2word = build_vocab(train_map, max_vocab_size=config.VOCAB_SIZE)
+
+    train_dataset = FlickrDataset(
+        image_dir=config.IMAGE_DIR,
+        captions_map=train_map,
+        word2idx=word2idx,
+        transform=transform,
+        max_len=config.MAX_LEN,
+    )
+    val_map = {k: full_map[k] for k in val_ids}
+    val_dataset = FlickrDataset(
+        image_dir=config.IMAGE_DIR,
+        captions_map=val_map,
+        word2idx=word2idx,
+        transform=transform,
+        max_len=config.MAX_LEN,
+    )
+
+    return train_dataset, val_dataset, val_ids, full_map, word2idx, idx2word
 
 
 def _default_image_transform():
