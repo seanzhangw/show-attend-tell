@@ -1,33 +1,7 @@
-import csv
 import re
-from collections import defaultdict, Counter
-
+from collections import Counter
 
 SPECIAL_TOKENS = ["<pad>", "<start>", "<end>", "<unk>"]
-
-def load_captions(caption_file):
-    """
-    Loads captions from the flickr8k captions.txt file.
-
-    Returns:
-        dict: {image_name: [caption1, caption2, ...]}
-    """
-    mapping = defaultdict(list)
-
-    with open(caption_file, "r", encoding="utf-8", newline="") as f:
-        f.seek(0)
-
-        reader = csv.DictReader(f)
-        for row in reader:
-            img = (row.get("image") or "").strip()
-            cap = (row.get("caption") or "").strip()
-            if not img or not cap:
-                continue
-            img = img.split("#")[0]
-            mapping[img].append(cap.lower())
-
-    return dict(mapping)
-
 
 def clean_caption(caption):
     """

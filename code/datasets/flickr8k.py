@@ -1,18 +1,20 @@
 import os
 import random
+import csv
+from collections import defaultdict
+
 from PIL import Image
+
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
 
 from .utils import (
-    load_captions,
     clean_caption,
     encode_caption,
     pad_caption,
     build_vocab,
 )
-
 
 class FlickrDataset(Dataset):
     def __init__(
@@ -66,6 +68,28 @@ class FlickrDataset(Dataset):
 
         return image, caption_tensor
 
+def load_captions(caption_file):
+    """
+    Loads captions from the flickr8k captions.txt file.
+
+    Returns:
+        dict: {image_name: [caption1, caption2, ...]}
+    """
+    mapping = defaultdict(list)
+
+    with open(caption_file, "r", encoding="utf-8", newline="") as f:
+        f.seek(0)
+
+        reader = csv.DictReader(f)
+        for row in reader:
+            img = (row.get("image") or "").strip()
+            cap = (row.get("caption") or "").strip()
+            if not img or not cap:
+                continue
+            img = img.split("#")[0]
+            mapping[img].append(cap.lower())
+
+    return dict(mapping)
 
 def collate_fn(batch):
     """
@@ -139,7 +163,6 @@ def _default_image_transform():
     )
 
 
-# 🚀 Clean builder function
 def build_flickr8k_dataset(config, transform=None):
     """
     Builds dataset + vocab in one place.

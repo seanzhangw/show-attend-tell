@@ -50,4 +50,6 @@ class Attention(nn.Module):
         # Compute context vector (weighted sum)
         context = (features * alpha.unsqueeze(2)).sum(dim=1)  # (B, D)
 
+        # TODO: Add gating scalar beta
+
         return context, alpha
