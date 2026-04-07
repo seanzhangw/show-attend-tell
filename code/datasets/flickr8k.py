@@ -67,7 +67,6 @@ class FlickrDataset(Dataset):
         return image, caption_tensor
 
 
-# 🔥 Important: custom collate function
 def collate_fn(batch):
     """
     Batch = list of (image, caption_tensor)
