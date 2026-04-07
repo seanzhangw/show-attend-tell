@@ -1,6 +1,5 @@
 import torch
 
-
 @torch.no_grad()
 def greedy_decode(
     encoder,
