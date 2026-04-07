@@ -105,6 +105,7 @@ class Decoder(nn.Module):
             # Dropout then classify next token
             out = self.dropout(h)
             logits_t = self.fc(out)  # (B, vocab_size)
+
             logits_list.append(logits_t)
             alpha_list.append(alpha_t)
 

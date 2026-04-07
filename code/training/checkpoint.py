@@ -89,3 +89,33 @@ def checkpoint_metrics(ckpt: Dict[str, Any]) -> Dict[str, Any]:
         if k in ckpt:
             legacy[k] = ckpt[k]
     return legacy
+
+
+def load_models_from_checkpoint_path(
+    path: str,
+    encoder: nn.Module,
+    decoder: nn.Module,
+    optimizer: Optional[torch.optim.Optimizer] = None,
+    map_location=None,
+) -> Dict[str, Any]:
+    """
+    High-level checkpoint restore from path.
+
+    Restores model weights always and optimizer state when provided.
+    Returns normalized metadata useful for resume / reporting.
+    """
+    ckpt = load_checkpoint(path, map_location=map_location)
+
+    if optimizer is None:
+        load_model_weights(encoder, decoder, ckpt)
+        start_epoch = int(ckpt.get("epoch", 0)) + 1
+    else:
+        start_epoch = restore_training(ckpt, encoder, decoder, optimizer)
+
+    return {
+        "start_epoch": start_epoch,
+        "tracking": dict(ckpt.get("tracking", {})),
+        "metrics": checkpoint_metrics(ckpt),
+        "hparams": checkpoint_hparams(ckpt),
+        "checkpoint": ckpt,
+    }

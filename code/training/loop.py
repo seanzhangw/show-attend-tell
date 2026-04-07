@@ -16,11 +16,7 @@ from eval.caption_metrics import run_metrics
 from eval.corpus_predictions import gather_greedy_corpus
 
 from .checkpoint import (
-    checkpoint_hparams,
-    checkpoint_metrics,
-    load_checkpoint,
-    load_model_weights,
-    restore_training,
+    load_models_from_checkpoint_path,
     save_checkpoint,
 )
 
@@ -145,7 +141,40 @@ def _init_best(mode: str) -> float:
     return float("inf") if mode == "min" else float("-inf")
 
 
-def fit(
+@torch.no_grad()
+def evaluate_caption_metrics(
+    encoder,
+    decoder,
+    val_image_ids,
+    full_captions_map: dict,
+    image_dir: str,
+    transform,
+    word2idx: dict,
+    idx2word: dict,
+    device: torch.device,
+    *,
+    eval_metric_names: Sequence[str] = ("bleu1", "bleu2", "bleu3", "bleu4"),
+    max_decode_len: int = 20,
+    max_images: Optional[int] = 500,
+) -> Dict[str, float]:
+    """Run caption metrics on provided models without any training step."""
+    list_of_references, hypotheses = gather_greedy_corpus(
+        encoder,
+        decoder,
+        val_image_ids,
+        full_captions_map,
+        image_dir,
+        transform,
+        word2idx,
+        idx2word,
+        device,
+        max_len=max_decode_len,
+        max_images=max_images,
+    )
+    return run_metrics(eval_metric_names, list_of_references, hypotheses)
+
+
+def run_training_loop(
     encoder,
     decoder,
     train_loader,
@@ -200,19 +229,25 @@ def fit(
     best_epoch: Optional[int] = None
 
     if resume_path and os.path.isfile(resume_path):
-        ckpt = load_checkpoint(resume_path, map_location=device)
-        start_epoch = restore_training(ckpt, encoder, decoder, optimizer)
-        track = ckpt.get("tracking") or {}
+        resume_info = load_models_from_checkpoint_path(
+            resume_path,
+            encoder,
+            decoder,
+            optimizer=optimizer,
+            map_location=device,
+        )
+        start_epoch = int(resume_info["start_epoch"])
+        track = resume_info.get("tracking", {})
         if "best_value" in track and "best_mode" in track:
             if track["best_mode"] == best_mode and track.get("best_metric_key") == best_by:
                 best_value = float(track["best_value"])
                 best_epoch = track.get("best_epoch")
         else:
-            m = checkpoint_metrics(ckpt)
+            m = resume_info.get("metrics", {})
             if best_by in m:
                 best_value = float(m[best_by])
-                best_epoch = ckpt.get("epoch")
-        saved_hp = checkpoint_hparams(ckpt)
+                best_epoch = int(resume_info["checkpoint"].get("epoch", 0))
+        saved_hp = resume_info.get("hparams", {})
         if saved_hp:
             mismatches = [k for k in saved_hp if k in hp and saved_hp[k] != hp[k]]
             if mismatches:
@@ -255,7 +290,7 @@ def fit(
             lambda_att=lambda_att,
         )
 
-        list_of_references, hypotheses = gather_greedy_corpus(
+        eval_scores = evaluate_caption_metrics(
             encoder,
             decoder,
             val_image_ids,
@@ -265,10 +300,10 @@ def fit(
             word2idx,
             idx2word,
             device,
-            max_len=max_decode_len,
+            eval_metric_names=eval_metric_names,
+            max_decode_len=max_decode_len,
             max_images=bleu_max_images,
         )
-        eval_scores = run_metrics(eval_metric_names, list_of_references, hypotheses)
 
         metrics: Dict[str, Any] = {
             "train_loss": train_loss,
@@ -320,3 +355,65 @@ def fit(
         "best_metric_key": best_by,
         "best_mode": best_mode,
     }
+
+
+def fit(
+    encoder,
+    decoder,
+    train_loader,
+    val_loader,
+    criterion,
+    optimizer,
+    device: torch.device,
+    epochs: int,
+    val_image_ids,
+    full_captions_map: dict,
+    transform,
+    word2idx: dict,
+    idx2word: dict,
+    image_dir: str,
+    *,
+    checkpoint_dir: str = "./checkpoints",
+    eval_metric_names: Sequence[str] = ("bleu1", "bleu2", "bleu3", "bleu4"),
+    best_by: str = "val_loss",
+    best_mode: str = "min",
+    resume_path: Optional[str] = None,
+    max_decode_len: int = 20,
+    bleu_max_images: Optional[int] = 500,
+    lambda_att: float = 1.0,
+    grad_clip: float = 5.0,
+    print_every: int = 100,
+    freeze_encoder: bool = True,
+    hparams: Optional[Dict[str, Any]] = None,
+    best_ckpt_filename: Optional[str] = None,
+) -> Tuple[float, str, Dict[str, Any]]:
+    """Backward-compatible wrapper over :func:`run_training_loop`."""
+    return run_training_loop(
+        encoder=encoder,
+        decoder=decoder,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        criterion=criterion,
+        optimizer=optimizer,
+        device=device,
+        epochs=epochs,
+        val_image_ids=val_image_ids,
+        full_captions_map=full_captions_map,
+        transform=transform,
+        word2idx=word2idx,
+        idx2word=idx2word,
+        image_dir=image_dir,
+        checkpoint_dir=checkpoint_dir,
+        eval_metric_names=eval_metric_names,
+        best_by=best_by,
+        best_mode=best_mode,
+        resume_path=resume_path,
+        max_decode_len=max_decode_len,
+        bleu_max_images=bleu_max_images,
+        lambda_att=lambda_att,
+        grad_clip=grad_clip,
+        print_every=print_every,
+        freeze_encoder=freeze_encoder,
+        hparams=hparams,
+        best_ckpt_filename=best_ckpt_filename,
+    )

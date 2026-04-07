@@ -16,10 +16,17 @@ MetricFn = Callable[[List, List], float]
 
 
 def corpus_bleu_n(list_of_references, hypotheses, n: int) -> float:
-    """Corpus BLEU with weights on a single n-gram order only (1 <= n <= 4 typical)."""
-    if n < 1:
-        raise ValueError(f"n must be >= 1, got {n}")
-    weights = tuple(1.0 if i == n - 1 else 0.0 for i in range(n))
+    """Corpus BLEU with cumulative n-gram weights up to order n (1 <= n <= 4)."""
+    if n < 1 or n > 4:
+        raise ValueError(f"n must be in [1, 4], got {n}")
+
+    # Cumulative BLEU weights:
+    # n=1 -> (1,0,0,0)
+    # n=2 -> (0.5,0.5,0,0)
+    # n=3 -> (1/3,1/3,1/3,0)
+    # n=4 -> (0.25,0.25,0.25,0.25)
+    weights = tuple((1.0 / n) if i < n else 0.0 for i in range(4))
+
     smooth = SmoothingFunction().method1
     return float(
         corpus_bleu(
@@ -29,7 +36,6 @@ def corpus_bleu_n(list_of_references, hypotheses, n: int) -> float:
             smoothing_function=smooth,
         )
     )
-
 
 def _bleu1(refs, hyps) -> float:
     return corpus_bleu_n(refs, hyps, 1)
