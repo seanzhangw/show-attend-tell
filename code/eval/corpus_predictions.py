@@ -8,7 +8,6 @@ import torch
 from PIL import Image
 
 from .greedy_decode import greedy_decode
-from .tokenize import caption_to_bleu_tokens
 
 from datasets.utils import clean_caption
 

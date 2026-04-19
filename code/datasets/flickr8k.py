@@ -126,12 +126,10 @@ def build_flickr8k_dataset_split(
         train_dataset, val_dataset, val_image_ids (set), full_captions_map, word2idx, idx2word
     """
     if transform is None:
-        transform = transforms.Compose(
-            [
-                transforms.Resize((224, 224)),
-                transforms.ToTensor(),
-            ]
-        )
+        transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+        ])
 
     full_map = load_captions(config.CAPTION_FILE)
     train_ids, val_ids = split_train_val_images(full_map, val_ratio, seed)
@@ -156,13 +154,3 @@ def build_flickr8k_dataset_split(
     )
 
     return train_dataset, val_dataset, val_ids, full_map, word2idx, idx2word
-
-
-def _default_image_transform():
-    """Resize + tensor so batches stack; Flickr8k images are not uniform size."""
-    return transforms.Compose(
-        [
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-        ]
-    )
