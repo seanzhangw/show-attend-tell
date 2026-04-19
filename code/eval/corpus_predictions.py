@@ -10,6 +10,15 @@ from PIL import Image
 from .greedy_decode import greedy_decode
 from .tokenize import caption_to_bleu_tokens
 
+from datasets.utils import clean_caption
+
+def caption_to_bleu_tokens(caption: str):
+    """
+    Lowercase, strip punctuation, split — same as training — but drop <start>/<end>.
+    Returns a list of word strings.
+    """
+    toks = clean_caption(caption)
+    return toks[1:-1]
 
 @torch.no_grad()
 def gather_greedy_corpus(

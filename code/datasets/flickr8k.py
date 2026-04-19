@@ -29,7 +29,7 @@ class FlickrDataset(Dataset):
         Args:
             image_dir (str): path to images
             captions_map (dict): image -> list of captions
-            word2idx (dict)
+            word2idx (dict): word -> index
             transform: torchvision transforms
             max_len (int): max caption length
         """
@@ -126,7 +126,12 @@ def build_flickr8k_dataset_split(
         train_dataset, val_dataset, val_image_ids (set), full_captions_map, word2idx, idx2word
     """
     if transform is None:
-        transform = _default_image_transform()
+        transform = transforms.Compose(
+            [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+            ]
+        )
 
     full_map = load_captions(config.CAPTION_FILE)
     train_ids, val_ids = split_train_val_images(full_map, val_ratio, seed)
@@ -161,29 +166,3 @@ def _default_image_transform():
             transforms.ToTensor(),
         ]
     )
-
-
-def build_flickr8k_dataset(config, transform=None):
-    """
-    Builds dataset + vocab in one place.
-    If ``transform`` is None, uses resize-to-224 and ``ToTensor()`` so ``collate_fn`` can stack.
-    """
-    if transform is None:
-        transform = _default_image_transform()
-
-    captions_map = load_captions(config.CAPTION_FILE)
-
-    word2idx, idx2word = build_vocab(
-        captions_map,
-        max_vocab_size=config.VOCAB_SIZE,
-    )
-
-    dataset = FlickrDataset(
-        image_dir=config.IMAGE_DIR,
-        captions_map=captions_map,
-        word2idx=word2idx,
-        transform=transform,
-        max_len=config.MAX_LEN,
-    )
-
-    return dataset, word2idx, idx2word

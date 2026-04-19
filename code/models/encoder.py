@@ -29,10 +29,10 @@ class EncoderCNN(nn.Module):
         returns:
             (B, num_pixels=49, feature_dim=2048)
         """
-        # (B, 2048, H, W) usually (B, 2048, 7, 7)
+        # (B, 2048, H, W), is (B, 2048, 7, 7) for 224 x 224 images
         features = self.resnet(images)
 
-        # ensure fixed size (B, 2048, 7, 7)
+        # ensure fixed size (B, 2048, 7, 7) if images are not 224 x 224
         features = self.adaptive_pool(features)
 
         # reshape for attention
