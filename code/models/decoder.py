@@ -87,6 +87,7 @@ class Decoder(nn.Module):
         alpha_list = []
         num_steps = captions_in.size(1)
 
+        # Loop through each generated word in the caption
         for t in range(num_steps):
             # Current word embedding: (B, embed_dim)
             x_t = emb[:, t, :]

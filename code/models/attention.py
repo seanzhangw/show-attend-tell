@@ -39,6 +39,8 @@ class Attention(nn.Module):
         att2 = att2.unsqueeze(1)                 # (B, 1, attention_dim)
 
         # Combine + nonlinearity (tanh per paper)
+        # Intuitively, this is combining the image features and the hidden state of the decoder
+        # ie. What is in the image and what the decoder is currently thinking about
         att = self.tanh(att1 + att2)             # (B, L, attention_dim)
 
         # Compute attention scores
