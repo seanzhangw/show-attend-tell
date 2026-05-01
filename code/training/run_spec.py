@@ -35,3 +35,7 @@ class TrainLoopOptions:
     lambda_att: float = 1.0
     grad_clip: float = 5.0
     print_every: int = 100
+    # Hard-attention (REINFORCE) knobs — ignored by the soft-attention training loop
+    lambda_reinforce: float = 1.0
+    lambda_entropy: float = 0.0
+    baseline_decay: float = 0.9

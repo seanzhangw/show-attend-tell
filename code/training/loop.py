@@ -379,3 +379,324 @@ def run_training_loop(
         "best_metric_key": opts.best_by,
         "best_mode": best_mode,
     }
+
+
+# ---------------------------------------------------------------------------
+# Hard-attention (REINFORCE) training
+# ---------------------------------------------------------------------------
+
+import torch.nn.functional as F
+
+
+def _compute_per_sample_nll(logits, captions, pad_idx):
+    """
+    Per-sample negative log-likelihood (sum over non-pad tokens).
+
+    Args:
+        logits:   (B, T-1, V)
+        captions: (B, T)
+        pad_idx:  int
+
+    Returns:
+        (B,) — one scalar per example; all values >= 0
+    """
+    targets = captions[:, 1:]                              # (B, T-1)
+    log_p = F.log_softmax(logits, dim=-1)                  # (B, T-1, V)
+    target_log_p = log_p.gather(2, targets.unsqueeze(2)).squeeze(2)  # (B, T-1)
+    mask = (targets != pad_idx).float()
+    return -(target_log_p * mask).sum(dim=1)               # (B,)
+
+
+def train_one_epoch_hard(
+    encoder,
+    decoder,
+    loader,
+    criterion,
+    optimizer,
+    device,
+    pad_idx: int,
+    baseline: float = 0.0,
+    lambda_reinforce: float = 1.0,
+    lambda_entropy: float = 0.0,
+    baseline_decay: float = 0.9,
+    grad_clip=5.0,
+    print_every=100,
+):
+    """
+    One training epoch for a HardDecoder using REINFORCE.
+
+    Loss = CE  +  lambda_reinforce * REINFORCE_term  -  lambda_entropy * H(alpha)
+
+    The REINFORCE term encourages attention locations that led to lower caption
+    loss (higher reward).  A per-batch exponential moving average serves as the
+    variance-reduction baseline (Section 4 of Show, Attend and Tell).
+
+    Args:
+        pad_idx:   pad token id — needed for per-sample reward computation
+        baseline:  current EMA baseline value (pass 0.0 at the start of training)
+
+    Returns:
+        (avg_total_loss, updated_baseline)
+    """
+    encoder.eval()
+    decoder.train()
+
+    running_loss = 0.0
+    t0 = time.time()
+
+    for batch_idx, (images, captions) in enumerate(loader, start=1):
+        images = images.to(device)
+        captions = captions.to(device)
+
+        optimizer.zero_grad()
+
+        with torch.no_grad():
+            features = encoder(images)
+
+        logits, alphas, log_probs = decoder(features, captions)
+
+        # --- caption loss (averaged over tokens and batch) ---
+        ce_loss = compute_caption_loss(logits, captions, criterion)
+
+        # --- REINFORCE term ---
+        # reward: per-sample negative NLL (higher = better caption)
+        per_sample_nll = _compute_per_sample_nll(logits, captions, pad_idx)  # (B,)
+        reward = -per_sample_nll.detach()                                     # (B,)
+
+        # update EMA baseline with current batch mean reward
+        batch_mean_reward = reward.mean().item()
+        baseline = baseline_decay * baseline + (1.0 - baseline_decay) * batch_mean_reward
+
+        advantage = reward - baseline                                          # (B,)
+
+        # mask log_probs so pad positions don't contribute to log pi
+        targets = captions[:, 1:]                                             # (B, T-1)
+        pad_mask = (targets != pad_idx).float()                               # (B, T-1)
+        log_pi = (log_probs * pad_mask).sum(dim=1)                            # (B,)
+
+        # REINFORCE gradient: maximise (advantage * log_pi), so minimise the negative
+        reinforce_loss = -(advantage * log_pi).mean()
+
+        # --- entropy bonus (encourages exploration) ---
+        # alpha is the full soft distribution; entropy averaged over B and T
+        eps = 1e-8
+        entropy = -(alphas * (alphas + eps).log()).sum(dim=2).mean()
+
+        total_loss = ce_loss + lambda_reinforce * reinforce_loss - lambda_entropy * entropy
+        total_loss.backward()
+
+        if grad_clip is not None:
+            clip_grad_norm_(decoder.parameters(), grad_clip)
+
+        optimizer.step()
+
+        running_loss += total_loss.item()
+
+        if batch_idx % print_every == 0:
+            elapsed = time.time() - t0
+            it_per_sec = batch_idx / max(elapsed, 1e-8)
+            eta_sec = (len(loader) - batch_idx) / max(it_per_sec, 1e-8)
+            avg_so_far = running_loss / batch_idx
+            print(
+                f"[Train-Hard] {batch_idx:>5}/{len(loader)} "
+                f"loss={avg_so_far:.4f} (CE={ce_loss.item():.4f}, "
+                f"RF={reinforce_loss.item():.4f}, H={entropy.item():.4f}) | "
+                f"baseline={baseline:.3f} | "
+                f"{it_per_sec:.2f} it/s | ETA {eta_sec/60:.1f} min"
+            )
+
+    return running_loss / max(1, len(loader)), baseline
+
+
+@torch.no_grad()
+def validate_hard(encoder, decoder, loader, criterion, device):
+    """
+    Validation epoch for a HardDecoder.
+
+    HardAttention uses argmax in eval mode, so this is fully deterministic.
+    We report CE loss only (no REINFORCE term needed for monitoring).
+    """
+    encoder.eval()
+    decoder.eval()
+
+    running_loss = 0.0
+
+    for images, captions in loader:
+        images = images.to(device)
+        captions = captions.to(device)
+
+        features = encoder(images)
+        logits, _alphas, _log_probs = decoder(features, captions)
+        ce_loss = compute_caption_loss(logits, captions, criterion)
+        running_loss += ce_loss.item()
+
+    return running_loss / max(1, len(loader))
+
+
+def run_single_epoch_hard(
+    epoch: int,
+    epochs: int,
+    encoder,
+    decoder,
+    train_loader,
+    val_loader,
+    criterion,
+    optimizer,
+    device: torch.device,
+    corpus: CorpusEvalSpec,
+    options: TrainLoopOptions,
+    pad_idx: int,
+    baseline: float,
+) -> Tuple[Dict[str, Any], float]:
+    """One full epoch (train + validate + caption metrics) for hard attention."""
+    print(f"\nEpoch {epoch}/{epochs}")
+
+    train_loss, baseline = train_one_epoch_hard(
+        encoder=encoder,
+        decoder=decoder,
+        loader=train_loader,
+        criterion=criterion,
+        optimizer=optimizer,
+        device=device,
+        pad_idx=pad_idx,
+        baseline=baseline,
+        lambda_reinforce=options.lambda_reinforce,
+        lambda_entropy=options.lambda_entropy,
+        baseline_decay=options.baseline_decay,
+        grad_clip=options.grad_clip,
+        print_every=options.print_every,
+    )
+
+    val_loss = validate_hard(
+        encoder=encoder,
+        decoder=decoder,
+        loader=val_loader,
+        criterion=criterion,
+        device=device,
+    )
+
+    eval_scores = evaluate_caption_metrics(encoder, decoder, device, corpus)
+
+    metrics: Dict[str, Any] = {
+        "train_loss": train_loss,
+        "val_loss": val_loss,
+        **eval_scores,
+    }
+
+    print(
+        f"[Epoch {epoch}] train_loss={train_loss:.4f} | val_loss={val_loss:.4f} | "
+        + " | ".join(f"{k}={v:.4f}" for k, v in eval_scores.items())
+    )
+    return metrics, baseline
+
+
+def run_training_loop_hard(
+    encoder,
+    decoder,
+    train_loader,
+    val_loader,
+    criterion,
+    optimizer,
+    device: torch.device,
+    epochs: int,
+    corpus: CorpusEvalSpec,
+    pad_idx: int,
+    options: Optional[TrainLoopOptions] = None,
+    *,
+    hparams: Optional[Dict[str, Any]] = None,
+) -> Tuple[float, str, Dict[str, Any]]:
+    """
+    Full REINFORCE training loop for a HardDecoder.
+
+    Drop-in replacement for run_training_loop — accepts the same arguments
+    plus pad_idx (needed for per-sample reward computation).
+
+    Returns:
+        (best_value, best_ckpt_path, last_tracking_dict)
+    """
+    opts = options or TrainLoopOptions()
+    best_mode = _infer_best_mode(opts.best_by)
+    best_ckpt_path = _resolve_checkpoint_paths(opts)
+
+    hp = dict(hparams or {})
+    start_epoch, best_value, best_epoch = _load_resume_state(
+        opts.resume_path,
+        encoder,
+        decoder,
+        optimizer,
+        device,
+        opts.best_by,
+        best_mode,
+        hp,
+    )
+
+    if start_epoch > epochs:
+        print(f"[fit] start_epoch {start_epoch} > epochs {epochs}; nothing to run.")
+        return best_value, best_ckpt_path, {
+            "best_value": best_value,
+            "best_epoch": best_epoch,
+            "best_metric_key": opts.best_by,
+            "best_mode": best_mode,
+        }
+
+    baseline = 0.0  # REINFORCE EMA baseline, carried across epochs
+
+    for epoch in range(start_epoch, epochs + 1):
+        metrics, baseline = run_single_epoch_hard(
+            epoch=epoch,
+            epochs=epochs,
+            encoder=encoder,
+            decoder=decoder,
+            train_loader=train_loader,
+            val_loader=val_loader,
+            criterion=criterion,
+            optimizer=optimizer,
+            device=device,
+            corpus=corpus,
+            options=opts,
+            pad_idx=pad_idx,
+            baseline=baseline,
+        )
+
+        if opts.best_by not in metrics:
+            raise KeyError(
+                f"best_by={opts.best_by!r} not in metrics keys {sorted(metrics.keys())!r}"
+            )
+        cur = float(metrics[opts.best_by])
+        if _is_better(cur, best_value, best_mode):
+            best_value = cur
+            best_epoch = epoch
+            tracking = {
+                "best_value": best_value,
+                "best_epoch": best_epoch,
+                "best_metric_key": opts.best_by,
+                "best_mode": best_mode,
+            }
+            save_checkpoint(
+                best_ckpt_path,
+                epoch,
+                metrics,
+                encoder,
+                decoder,
+                optimizer,
+                corpus.word2idx,
+                corpus.idx2word,
+                hp,
+                tracking=tracking,
+            )
+            print(
+                f"  -> Saved new best checkpoint: {best_ckpt_path} "
+                f"({opts.best_by}={best_value:.4f})"
+            )
+
+    print(
+        f"\nBest {opts.best_by}: {best_value:.4f}"
+        + (f" (epoch {best_epoch})" if best_epoch else "")
+    )
+    print(f"Best checkpoint path: {best_ckpt_path}")
+    return best_value, best_ckpt_path, {
+        "best_value": best_value,
+        "best_epoch": best_epoch,
+        "best_metric_key": opts.best_by,
+        "best_mode": best_mode,
+    }
