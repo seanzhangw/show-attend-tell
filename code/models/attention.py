@@ -20,6 +20,8 @@ class Attention(nn.Module):
 
         self.tanh = nn.Tanh()
         self.softmax = nn.Softmax(dim=1)
+        self.f_beta = nn.Linear(hidden_dim, 1)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, features, hidden):
         """
@@ -53,5 +55,6 @@ class Attention(nn.Module):
         context = (features * alpha.unsqueeze(2)).sum(dim=1)  # (B, D)
 
         # TODO: Add gating scalar beta
-
+        beta = self.sigmoid(self.f_beta(hidden))
+        context = context * beta
         return context, alpha
