@@ -72,8 +72,9 @@ def _meteor_corpus(list_of_references, hypotheses) -> float:
         if not hyp:
             scores.append(0.0)
             continue
-        best = max(float(meteor_score(ref, hyp)) for ref in refs)
-        scores.append(best)
+        # NLTK's meteor_score expects the whole list of references at once
+        scores.append(float(meteor_score(refs, hyp)))
+        
     return float(sum(scores) / len(scores)) if scores else 0.0
 
 

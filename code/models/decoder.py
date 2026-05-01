@@ -42,7 +42,11 @@ class Decoder(nn.Module):
         self.init_c = nn.Linear(feature_dim, hidden_dim)
 
         self.dropout = nn.Dropout(dropout)
-        self.fc = nn.Linear(hidden_dim, vocab_size)
+
+        # Deep output layer (Eq. 7)
+        self.L_h = nn.Linear(hidden_dim, embed_dim)
+        self.L_z = nn.Linear(feature_dim, embed_dim)
+        self.L_o = nn.Linear(embed_dim, vocab_size)
 
     def init_hidden_state(self, features: torch.Tensor):
         """
@@ -104,8 +108,9 @@ class Decoder(nn.Module):
             h, c = self.lstm_cell(lstm_in, (h, c))
 
             # Dropout then classify next token
-            out = self.dropout(h)
-            logits_t = self.fc(out)  # (B, vocab_size)
+            out = x_t + self.L_h(h) + self.L_z(context) # (B, embed_dim)
+            out = self.dropout(out)
+            logits_t = self.L_o(out)  # (B, vocab_size)
 
             logits_list.append(logits_t)
             alpha_list.append(alpha_t)
@@ -115,3 +120,60 @@ class Decoder(nn.Module):
         # (B, T-1, L)
         alphas = torch.stack(alpha_list, dim=1)
         return logits, alphas
+    
+    def sample(self, features: torch.Tensor, start_token_id: int, max_len: int = 20):
+        """
+        Greedy decoding for inference without teacher forcing.
+        
+        Args:
+            features: (B, L, D) image features from the encoder
+            start_token_id: The integer ID for your <start> token in the vocabulary
+            max_len: Maximum number of words to generate
+            
+        Returns:
+            sampled_ids: (B, max_len) predicted word IDs
+            alphas: (B, max_len, L) attention weights for visualization
+        """
+        B = features.size(0)
+        
+        # Initialize hidden state from the image
+        h, c = self.init_hidden_state(features)
+
+        # Start sequence by feeding the <start> token to every item in the batch
+        # inputs shape: (B,)
+        inputs = torch.full((B,), start_token_id, dtype=torch.long, device=features.device)
+
+        sampled_ids = []
+        alpha_list = []
+
+        for _ in range(max_len):
+            # Embed the current token
+            x_t = self.embedding(inputs)  # (B, embed_dim)
+
+            # Get attention context and weights
+            context, alpha_t = self.attention(features, h)
+
+            # Update LSTM
+            lstm_in = torch.cat([x_t, context], dim=1)
+            h, c = self.lstm_cell(lstm_in, (h, c))
+
+            # Deep output layer (Equation 7)
+            deep_out = x_t + self.L_h(h) + self.L_z(context)
+            
+            logits_t = self.L_o(deep_out)  # (B, vocab_size)
+
+            # Pick the word with the highest probability
+            predicted_word_id = logits_t.argmax(dim=1)  # (B,)
+
+            # Save the predictions and attention weights
+            sampled_ids.append(predicted_word_id)
+            alpha_list.append(alpha_t)
+
+            # Set the newly predicted word as the input for the NEXT time step
+            inputs = predicted_word_id
+
+        # Stack lists into final tensors
+        sampled_ids = torch.stack(sampled_ids, dim=1) # (B, max_len)
+        alphas = torch.stack(alpha_list, dim=1)       # (B, max_len, L)
+        
+        return sampled_ids, alphas
