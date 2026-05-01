@@ -459,9 +459,15 @@ def train_one_epoch_hard(
         ce_loss = compute_caption_loss(logits, captions, criterion)
 
         # --- REINFORCE term ---
-        # reward: per-sample negative NLL (higher = better caption)
+        targets = captions[:, 1:]                                             # (B, T-1)
+        pad_mask = (targets != pad_idx).float()                               # (B, T-1)
+        num_tokens = pad_mask.sum(dim=1).clamp(min=1)                         # (B,)
+
+        # Normalize reward by sequence length so it stays on the same
+        # per-token scale as the CE loss.  Without this, summed NLL rewards
+        # (~-40 to -80) dwarf the CE loss and the REINFORCE term dominates.
         per_sample_nll = _compute_per_sample_nll(logits, captions, pad_idx)  # (B,)
-        reward = -per_sample_nll.detach()                                     # (B,)
+        reward = -(per_sample_nll / num_tokens).detach()                      # (B,)
 
         # update EMA baseline with current batch mean reward
         batch_mean_reward = reward.mean().item()
@@ -469,18 +475,17 @@ def train_one_epoch_hard(
 
         advantage = reward - baseline                                          # (B,)
 
-        # mask log_probs so pad positions don't contribute to log pi
-        targets = captions[:, 1:]                                             # (B, T-1)
-        pad_mask = (targets != pad_idx).float()                               # (B, T-1)
-        log_pi = (log_probs * pad_mask).sum(dim=1)                            # (B,)
+        # Per-token mean log pi — normalized to match reward scale
+        log_pi = (log_probs * pad_mask).sum(dim=1) / num_tokens               # (B,)
 
         # REINFORCE gradient: maximise (advantage * log_pi), so minimise the negative
         reinforce_loss = -(advantage * log_pi).mean()
 
         # --- entropy bonus (encourages exploration) ---
-        # alpha is the full soft distribution; entropy averaged over B and T
+        # Mask pad positions before averaging so they don't dilute entropy.
         eps = 1e-8
-        entropy = -(alphas * (alphas + eps).log()).sum(dim=2).mean()
+        token_entropy = -(alphas * (alphas + eps).log()).sum(dim=2)            # (B, T-1)
+        entropy = (token_entropy * pad_mask).sum() / pad_mask.sum().clamp(min=1)
 
         total_loss = ce_loss + lambda_reinforce * reinforce_loss - lambda_entropy * entropy
         total_loss.backward()
