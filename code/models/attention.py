@@ -49,7 +49,8 @@ class Attention(nn.Module):
         # Normalize to get attention weights
         alpha = self.softmax(e)                 # (B, L)
 
-        # Compute context vector (weighted sum)
+        # Compute context vector (weighted sum) 
+        # Equation (13) in Show, Attend and Tell
         context = (features * alpha.unsqueeze(2)).sum(dim=1)  # (B, D)
 
         # TODO: Add gating scalar beta

@@ -69,6 +69,7 @@ def train_one_epoch(
 
         logits, alphas = decoder(features, captions)
 
+        # Equation (14) in Show, Attend and Tell
         ce_loss = compute_caption_loss(logits, captions, criterion)
         attention_penalty = ((1.0 - alphas.sum(dim=1)) ** 2).mean()
         loss = ce_loss + lambda_att * attention_penalty
@@ -112,6 +113,7 @@ def validate(encoder, decoder, loader, criterion, device, lambda_att=1.0):
         features = encoder(images)
         logits, alphas = decoder(features, captions)
 
+        # Equation (14) in Show, Attend and Tell
         ce_loss = compute_caption_loss(logits, captions, criterion)
         attention_penalty = ((1.0 - alphas.sum(dim=1)) ** 2).mean()
         loss = ce_loss + lambda_att * attention_penalty
