@@ -1,0 +1,120 @@
+Epoch 1/8
+[Train-Hard]   100/1138 loss=6.7166 (CE=5.3609, RF=0.3204, H=3.8566) | baseline=-5.492 | 16.94 it/s | ETA 1.0 min
+[Train-Hard]   200/1138 loss=5.9097 (CE=5.0749, RF=-0.6626, H=3.8571) | baseline=-4.972 | 18.67 it/s | ETA 0.8 min
+[Train-Hard]   300/1138 loss=5.5349 (CE=4.6309, RF=0.5102, H=3.8412) | baseline=-4.683 | 19.29 it/s | ETA 0.7 min
+[Train-Hard]   400/1138 loss=5.2988 (CE=4.6424, RF=-0.3401, H=3.8450) | baseline=-4.582 | 19.79 it/s | ETA 0.6 min
+[Train-Hard]   500/1138 loss=5.1205 (CE=4.4145, RF=0.0360, H=3.8490) | baseline=-4.373 | 20.10 it/s | ETA 0.5 min
+[Train-Hard]   600/1138 loss=4.9832 (CE=4.3626, RF=-0.2139, H=3.8396) | baseline=-4.281 | 20.26 it/s | ETA 0.4 min
+[Train-Hard]   700/1138 loss=4.8722 (CE=4.0805, RF=0.0101, H=3.8405) | baseline=-4.137 | 20.39 it/s | ETA 0.4 min
+[Train-Hard]   800/1138 loss=4.7792 (CE=4.2364, RF=-0.4520, H=3.8230) | baseline=-4.111 | 20.48 it/s | ETA 0.3 min
+[Train-Hard]   900/1138 loss=4.6993 (CE=4.2364, RF=-0.7639, H=3.8350) | baseline=-4.078 | 20.47 it/s | ETA 0.2 min
+[Train-Hard]  1000/1138 loss=4.6282 (CE=3.8983, RF=0.0544, H=3.8468) | baseline=-4.004 | 20.50 it/s | ETA 0.1 min
+[Train-Hard]  1100/1138 loss=4.5694 (CE=4.0743, RF=-0.2611, H=3.8366) | baseline=-4.006 | 20.56 it/s | ETA 0.0 min
+[Epoch 1] train_loss=4.5473 | val_loss=3.7653 | bleu1=0.4571 | bleu2=0.2941 | bleu3=0.1713 | bleu4=0.1025 | meteor=0.3193
+  -> Saved new best checkpoint: ./checkpoints_hard/best_by_val_loss.pt (val_loss=3.7653)
+
+Epoch 2/8
+[Train-Hard]   100/1138 loss=3.8141 (CE=3.7124, RF=0.5094, H=3.8527) | baseline=-3.815 | 16.79 it/s | ETA 1.0 min
+[Train-Hard]   200/1138 loss=3.7972 (CE=3.9934, RF=-0.3649, H=3.8588) | baseline=-3.872 | 18.17 it/s | ETA 0.9 min
+[Train-Hard]   300/1138 loss=3.7819 (CE=3.4707, RF=1.2178, H=3.8657) | baseline=-3.726 | 18.84 it/s | ETA 0.7 min
+[Train-Hard]   400/1138 loss=3.7594 (CE=3.4859, RF=0.8386, H=3.8652) | baseline=-3.623 | 19.18 it/s | ETA 0.6 min
+[Train-Hard]   500/1138 loss=3.7403 (CE=3.6892, RF=0.2608, H=3.8607) | baseline=-3.642 | 19.40 it/s | ETA 0.5 min
+[Train-Hard]   600/1138 loss=3.7202 (CE=3.7673, RF=-0.0460, H=3.8678) | baseline=-3.691 | 19.57 it/s | ETA 0.5 min
+[Train-Hard]   700/1138 loss=3.7032 (CE=3.8535, RF=-0.8928, H=3.8718) | baseline=-3.621 | 19.76 it/s | ETA 0.4 min
+[Train-Hard]   800/1138 loss=3.6891 (CE=3.4442, RF=0.7274, H=3.8690) | baseline=-3.567 | 19.85 it/s | ETA 0.3 min
+[Train-Hard]   900/1138 loss=3.6748 (CE=3.6009, RF=0.1882, H=3.8736) | baseline=-3.560 | 19.89 it/s | ETA 0.2 min
+[Train-Hard]  1000/1138 loss=3.6607 (CE=3.5875, RF=0.4124, H=3.8720) | baseline=-3.648 | 19.92 it/s | ETA 0.1 min
+[Train-Hard]  1100/1138 loss=3.6477 (CE=3.4631, RF=0.1896, H=3.8688) | baseline=-3.509 | 19.98 it/s | ETA 0.0 min
+[Epoch 2] train_loss=3.6437 | val_loss=3.4371 | bleu1=0.5095 | bleu2=0.3401 | bleu3=0.2170 | bleu4=0.1398 | meteor=0.3398
+  -> Saved new best checkpoint: ./checkpoints_hard/best_by_val_loss.pt (val_loss=3.4371)
+
+Epoch 3/8
+[Train-Hard]   100/1138 loss=3.3915 (CE=3.4577, RF=0.3117, H=3.8721) | baseline=-3.412 | 17.61 it/s | ETA 1.0 min
+[Train-Hard]   200/1138 loss=3.3890 (CE=3.2233, RF=0.8279, H=3.8778) | baseline=-3.439 | 19.21 it/s | ETA 0.8 min
+[Train-Hard]   300/1138 loss=3.3729 (CE=3.1918, RF=0.8605, H=3.8782) | baseline=-3.341 | 19.80 it/s | ETA 0.7 min
+[Train-Hard]   400/1138 loss=3.3717 (CE=3.5364, RF=-0.4629, H=3.8789) | baseline=-3.430 | 20.02 it/s | ETA 0.6 min
+[Train-Hard]   500/1138 loss=3.3599 (CE=3.9798, RF=-2.2869, H=3.8781) | baseline=-3.366 | 20.18 it/s | ETA 0.5 min
+[Train-Hard]   600/1138 loss=3.3533 (CE=3.3290, RF=0.0234, H=3.8812) | baseline=-3.306 | 20.29 it/s | ETA 0.4 min
+[Train-Hard]   700/1138 loss=3.3469 (CE=3.2682, RF=0.4192, H=3.8814) | baseline=-3.309 | 20.26 it/s | ETA 0.4 min
+[Train-Hard]   800/1138 loss=3.3396 (CE=3.1876, RF=0.6517, H=3.8830) | baseline=-3.310 | 20.32 it/s | ETA 0.3 min
+[Train-Hard]   900/1138 loss=3.3323 (CE=3.1575, RF=0.7898, H=3.8842) | baseline=-3.279 | 20.40 it/s | ETA 0.2 min
+[Train-Hard]  1000/1138 loss=3.3251 (CE=3.4463, RF=-0.7619, H=3.8835) | baseline=-3.339 | 20.44 it/s | ETA 0.1 min
+[Train-Hard]  1100/1138 loss=3.3161 (CE=3.5726, RF=-1.0924, H=3.8787) | baseline=-3.269 | 20.50 it/s | ETA 0.0 min
+[Epoch 3] train_loss=3.3139 | val_loss=3.2700 | bleu1=0.5417 | bleu2=0.3673 | bleu3=0.2391 | bleu4=0.1551 | meteor=0.3730
+  -> Saved new best checkpoint: ./checkpoints_hard/best_by_val_loss.pt (val_loss=3.2700)
+
+Epoch 4/8
+[Train-Hard]   100/1138 loss=3.1221 (CE=3.2267, RF=-0.1250, H=3.8827) | baseline=-3.166 | 17.13 it/s | ETA 1.0 min
+[Train-Hard]   200/1138 loss=3.1290 (CE=3.6090, RF=-1.5133, H=3.8830) | baseline=-3.204 | 18.48 it/s | ETA 0.8 min
+[Train-Hard]   300/1138 loss=3.1343 (CE=3.0830, RF=0.2035, H=3.8810) | baseline=-3.120 | 19.02 it/s | ETA 0.7 min
+[Train-Hard]   400/1138 loss=3.1316 (CE=3.2330, RF=-0.7256, H=3.8803) | baseline=-3.079 | 19.24 it/s | ETA 0.6 min
+[Train-Hard]   500/1138 loss=3.1291 (CE=3.2681, RF=-0.4397, H=3.8842) | baseline=-3.139 | 19.44 it/s | ETA 0.5 min
+[Train-Hard]   600/1138 loss=3.1217 (CE=3.3995, RF=-0.8140, H=3.8849) | baseline=-3.172 | 19.51 it/s | ETA 0.5 min
+[Train-Hard]   700/1138 loss=3.1197 (CE=2.7785, RF=1.3753, H=3.8830) | baseline=-3.059 | 19.58 it/s | ETA 0.4 min
+[Train-Hard]   800/1138 loss=3.1147 (CE=3.1519, RF=-0.0174, H=3.8829) | baseline=-3.080 | 19.66 it/s | ETA 0.3 min
+[Train-Hard]   900/1138 loss=3.1112 (CE=3.2205, RF=-0.0980, H=3.8849) | baseline=-3.109 | 19.73 it/s | ETA 0.2 min
+[Train-Hard]  1000/1138 loss=3.1075 (CE=3.1777, RF=-0.2589, H=3.8862) | baseline=-3.182 | 19.81 it/s | ETA 0.1 min
+[Train-Hard]  1100/1138 loss=3.1057 (CE=3.2299, RF=-0.2137, H=3.8858) | baseline=-3.080 | 19.91 it/s | ETA 0.0 min
+[Epoch 4] train_loss=3.1035 | val_loss=3.1781 | bleu1=0.5626 | bleu2=0.3899 | bleu3=0.2550 | bleu4=0.1638 | meteor=0.3727
+  -> Saved new best checkpoint: ./checkpoints_hard/best_by_val_loss.pt (val_loss=3.1781)
+
+Epoch 5/8
+[Train-Hard]   100/1138 loss=2.9616 (CE=2.8960, RF=0.4392, H=3.8854) | baseline=-2.965 | 17.00 it/s | ETA 1.0 min
+[Train-Hard]   200/1138 loss=2.9637 (CE=2.8065, RF=0.6075, H=3.8838) | baseline=-2.935 | 18.73 it/s | ETA 0.8 min
+[Train-Hard]   300/1138 loss=2.9693 (CE=3.0193, RF=-0.1054, H=3.8850) | baseline=-2.975 | 19.46 it/s | ETA 0.7 min
+[Train-Hard]   400/1138 loss=2.9616 (CE=2.7627, RF=0.5795, H=3.8822) | baseline=-2.908 | 19.57 it/s | ETA 0.6 min
+[Train-Hard]   500/1138 loss=2.9503 (CE=2.7504, RF=0.5684, H=3.8818) | baseline=-2.907 | 19.70 it/s | ETA 0.5 min
+[Train-Hard]   600/1138 loss=2.9526 (CE=2.9179, RF=0.1786, H=3.8848) | baseline=-3.009 | 19.88 it/s | ETA 0.5 min
+[Train-Hard]   700/1138 loss=2.9480 (CE=2.8305, RF=0.2653, H=3.8863) | baseline=-2.917 | 19.95 it/s | ETA 0.4 min
+[Train-Hard]   800/1138 loss=2.9472 (CE=3.0561, RF=-0.3162, H=3.8860) | baseline=-2.974 | 19.99 it/s | ETA 0.3 min
+[Train-Hard]   900/1138 loss=2.9451 (CE=3.1024, RF=-0.6037, H=3.8853) | baseline=-2.987 | 20.07 it/s | ETA 0.2 min
+[Train-Hard]  1000/1138 loss=2.9451 (CE=3.0873, RF=-0.4630, H=3.8868) | baseline=-2.976 | 20.14 it/s | ETA 0.1 min
+[Train-Hard]  1100/1138 loss=2.9422 (CE=3.2833, RF=-1.1771, H=3.8853) | baseline=-2.939 | 20.17 it/s | ETA 0.0 min
+[Epoch 5] train_loss=2.9417 | val_loss=3.1228 | bleu1=0.5827 | bleu2=0.4098 | bleu3=0.2749 | bleu4=0.1804 | meteor=0.3905
+  -> Saved new best checkpoint: ./checkpoints_hard/best_by_val_loss.pt (val_loss=3.1228)
+
+Epoch 6/8
+[Train-Hard]   100/1138 loss=2.8101 (CE=2.7355, RF=0.3395, H=3.8872) | baseline=-2.794 | 17.26 it/s | ETA 1.0 min
+[Train-Hard]   200/1138 loss=2.8051 (CE=2.5421, RF=1.0125, H=3.8859) | baseline=-2.778 | 18.74 it/s | ETA 0.8 min
+[Train-Hard]   300/1138 loss=2.8098 (CE=3.0389, RF=-0.6631, H=3.8865) | baseline=-2.818 | 19.42 it/s | ETA 0.7 min
+[Train-Hard]   400/1138 loss=2.8007 (CE=2.9294, RF=-0.0981, H=3.8866) | baseline=-2.861 | 19.59 it/s | ETA 0.6 min
+[Train-Hard]   500/1138 loss=2.8018 (CE=3.0999, RF=-0.7071, H=3.8874) | baseline=-2.865 | 19.70 it/s | ETA 0.5 min
+[Train-Hard]   600/1138 loss=2.8071 (CE=2.8755, RF=-0.5152, H=3.8877) | baseline=-2.903 | 19.79 it/s | ETA 0.5 min
+[Train-Hard]   700/1138 loss=2.8121 (CE=2.8564, RF=-0.0432, H=3.8885) | baseline=-2.853 | 19.85 it/s | ETA 0.4 min
+[Train-Hard]   800/1138 loss=2.8116 (CE=2.8051, RF=0.1470, H=3.8883) | baseline=-2.825 | 19.89 it/s | ETA 0.3 min
+[Train-Hard]   900/1138 loss=2.8112 (CE=2.7221, RF=0.4031, H=3.8890) | baseline=-2.835 | 19.90 it/s | ETA 0.2 min
+[Train-Hard]  1000/1138 loss=2.8097 (CE=2.7900, RF=0.3982, H=3.8889) | baseline=-2.835 | 19.92 it/s | ETA 0.1 min
+[Train-Hard]  1100/1138 loss=2.8090 (CE=3.2374, RF=-1.2400, H=3.8887) | baseline=-2.922 | 19.93 it/s | ETA 0.0 min
+[Epoch 6] train_loss=2.8098 | val_loss=3.0851 | bleu1=0.5844 | bleu2=0.4036 | bleu3=0.2638 | bleu4=0.1697 | meteor=0.3946
+  -> Saved new best checkpoint: ./checkpoints_hard/best_by_val_loss.pt (val_loss=3.0851)
+
+Epoch 7/8
+[Train-Hard]   100/1138 loss=2.6605 (CE=2.6743, RF=0.1308, H=3.8891) | baseline=-2.749 | 17.00 it/s | ETA 1.0 min
+[Train-Hard]   200/1138 loss=2.6722 (CE=2.6735, RF=0.0270, H=3.8880) | baseline=-2.712 | 18.42 it/s | ETA 0.8 min
+[Train-Hard]   300/1138 loss=2.6887 (CE=2.7894, RF=-0.3520, H=3.8888) | baseline=-2.722 | 19.04 it/s | ETA 0.7 min
+[Train-Hard]   400/1138 loss=2.6927 (CE=2.6921, RF=0.0889, H=3.8889) | baseline=-2.701 | 19.24 it/s | ETA 0.6 min
+[Train-Hard]   500/1138 loss=2.6930 (CE=2.7433, RF=0.2211, H=3.8891) | baseline=-2.739 | 19.53 it/s | ETA 0.5 min
+[Train-Hard]   600/1138 loss=2.6948 (CE=2.4834, RF=0.5085, H=3.8887) | baseline=-2.619 | 19.72 it/s | ETA 0.5 min
+[Train-Hard]   700/1138 loss=2.6977 (CE=2.7749, RF=-0.1975, H=3.8892) | baseline=-2.753 | 19.83 it/s | ETA 0.4 min
+[Train-Hard]   800/1138 loss=2.6968 (CE=2.9591, RF=-0.9103, H=3.8892) | baseline=-2.709 | 19.92 it/s | ETA 0.3 min
+[Train-Hard]   900/1138 loss=2.6943 (CE=2.6371, RF=0.2119, H=3.8894) | baseline=-2.670 | 19.97 it/s | ETA 0.2 min
+[Train-Hard]  1000/1138 loss=2.6961 (CE=2.5710, RF=0.5851, H=3.8885) | baseline=-2.663 | 19.98 it/s | ETA 0.1 min
+[Train-Hard]  1100/1138 loss=2.6946 (CE=2.6574, RF=0.0799, H=3.8889) | baseline=-2.694 | 20.00 it/s | ETA 0.0 min
+[Epoch 7] train_loss=2.6960 | val_loss=3.0612 | bleu1=0.5685 | bleu2=0.3975 | bleu3=0.2677 | bleu4=0.1794 | meteor=0.3953
+  -> Saved new best checkpoint: ./checkpoints_hard/best_by_val_loss.pt (val_loss=3.0612)
+
+Epoch 8/8
+[Train-Hard]   100/1138 loss=2.5763 (CE=2.7129, RF=-0.1441, H=3.8891) | baseline=-2.604 | 16.73 it/s | ETA 1.0 min
+[Train-Hard]   200/1138 loss=2.5910 (CE=2.8933, RF=-0.8161, H=3.8890) | baseline=-2.637 | 18.32 it/s | ETA 0.9 min
+[Train-Hard]   300/1138 loss=2.5912 (CE=2.6833, RF=-0.3226, H=3.8890) | baseline=-2.577 | 18.97 it/s | ETA 0.7 min
+[Train-Hard]   400/1138 loss=2.5897 (CE=2.6427, RF=-0.4620, H=3.8895) | baseline=-2.571 | 19.33 it/s | ETA 0.6 min
+[Train-Hard]   500/1138 loss=2.5893 (CE=2.7902, RF=-0.4872, H=3.8902) | baseline=-2.641 | 19.60 it/s | ETA 0.5 min
+[Train-Hard]   600/1138 loss=2.5879 (CE=2.9078, RF=-0.8609, H=3.8895) | baseline=-2.583 | 19.82 it/s | ETA 0.5 min
+[Train-Hard]   700/1138 loss=2.5894 (CE=2.5316, RF=0.6180, H=3.8901) | baseline=-2.627 | 19.93 it/s | ETA 0.4 min
+[Train-Hard]   800/1138 loss=2.5918 (CE=2.5966, RF=0.2866, H=3.8901) | baseline=-2.626 | 19.95 it/s | ETA 0.3 min
+[Train-Hard]   900/1138 loss=2.5911 (CE=2.6168, RF=0.1233, H=3.8903) | baseline=-2.560 | 19.96 it/s | ETA 0.2 min
+[Train-Hard]  1000/1138 loss=2.5917 (CE=2.8133, RF=-0.4801, H=3.8901) | baseline=-2.637 | 20.00 it/s | ETA 0.1 min
+[Train-Hard]  1100/1138 loss=2.5951 (CE=2.5466, RF=0.6748, H=3.8908) | baseline=-2.629 | 20.04 it/s | ETA 0.0 min
+[Epoch 8] train_loss=2.5963 | val_loss=3.0660 | bleu1=0.5913 | bleu2=0.4133 | bleu3=0.2750 | bleu4=0.1824 | meteor=0.4047
+
+Best val_loss: 3.0612 (epoch 7)
